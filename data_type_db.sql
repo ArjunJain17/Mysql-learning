@@ -86,4 +86,76 @@ select curdate(), date_format(now(), '%M %D at %h:%i') as formatted_time; -- we 
 select cast('09:45:00' as time);
 select * from children where birthtime between cast('9:00:00' as time) and cast('15:00:00' as time);
 
+-- constraint keyword
 
+create table constraintCheck1(
+name varchar(20),
+age int check(age>18)
+);
+
+insert into constraintCheck1 values('arjun', 15);  -- check constraint constraintCheck1_chk_1 is violated
+
+create table constraintCheck(
+name varchar(20),
+age int,
+constraint age_underage check(age>18)
+);
+
+drop table constraintCheck;
+insert into constraintCheck values('arjun', 15); -- -- check constraint age_underage is violated
+
+create table companies (
+name varchar(20),
+address varchar(100) ,
+constraint name_address unique(name,address) ,
+constraint name unique(name) -- here name and address combined should be unique 
+);
+
+create table uniqueCheck(
+name varchar(20),
+address varchar(100) ,
+unique(name), unique(address)
+);
+
+insert into uniqueCheck values('arjun', 'argusoft'); 
+insert into uniqueCheck values('arjun', 'sargasan'); -- wont work
+insert into uniqueCheck values('sankalan', 'sargasan');
+insert into uniqueCheck values('sankalan', 'argusoft');  -- wont work
+
+select * from uniqueCheck;
+
+
+-- substr test
+create table substrCheck(
+name varchar(10),
+shortName varchar(5),
+constraint short_name check(substr(name, 1,3)=shortName)
+);
+
+insert into  substrCheck values ('Arjun','Arj');
+insert into  substrCheck values ('Arjun','Ar'); -- error: check constraint short_name
+
+select * from substrCheck;
+
+-- alter statement
+
+create table altercheck(
+name varchar(10)
+
+);
+desc altercheck;
+
+
+alter table altercheck add column address varchar(20);
+
+alter table altercheck drop column address;
+
+alter table altercheck rename to companies;
+desc companies;
+
+alter table companies rename column address to myAddress;
+
+alter table companies modify column name varchar(20);
+alter table companies change myAddress address varchar(20);
+
+alter table companies add constraint address_check check(char_length(address)>10);
