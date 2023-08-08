@@ -96,3 +96,52 @@ select (select count(*) from photos)/(select count(*) from users);
 
 select tag_name, count(*) from tags t join photo_tags p on t.id = p.tag_id group by tag_id order by count(*) desc limit 5;
 
+
+
+--  triggers
+delimiter %%
+
+create trigger follow_check
+before insert on follows for each row
+begin
+if new .follower_id = new.followee_id
+then signal sqlstate '45000' 
+set message_text = 'you cannot follow yourself';
+end if;
+end;
+
+%%
+
+delimiter ;
+
+insert into follows(follower_id, followee_id) values (1000,4);
+
+create table history (
+    follower_id integer not null,
+    followee_id integer not null,
+    created_at timestamp default now(),
+    foreign key(follower_id) references users(id),
+    foreign key(followee_id) references users(id),
+    primary key(follower_id, followee_id)
+);
+
+delimiter %%
+create trigger save_history
+before delete on follows for each row
+begin
+insert into history(follower_id, followee_id) values (OLD.follower_id, OLD.followee_id);
+end;
+
+%%
+
+delimiter ;
+
+drop trigger save_history;
+
+select * from history;
+select * from follows;
+
+truncate table history;
+delete from follows where followee_id = 3;
+
+
